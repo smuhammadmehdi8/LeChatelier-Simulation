@@ -5,7 +5,7 @@
   color: var(--accent);
   background: var(--accent-bg);
   border: 2px solid transparent;
-  transition: border-color 0.3s;
+  transition: border-color 0.s;
   margin-bottom: 24px;
 
   &:hover {
@@ -16,6 +16,8 @@
     outline-offset: 2px;
   }
 }
+
+
 
 .hero {
   position: relative;
