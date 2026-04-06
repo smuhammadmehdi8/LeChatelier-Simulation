@@ -30,7 +30,7 @@
       - Pressure
       - Concentration/moles
       - Volume
-      - Adding of (which does nothing to equilibrium):
+    - Adding of (which does nothing to equilibrium):
         - Inert gases
         - Catalysts 
   - IDEAL GAS LAW: PV = nRT
