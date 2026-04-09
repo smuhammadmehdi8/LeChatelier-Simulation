@@ -4,6 +4,7 @@
 ## Requirements
 
   Clone the repo and install dependencies:
+    - nodejs must be previously downloaded
 
   ```bash 
   git clone https://github.com/smuhammadmehdi8/LeChatelier-Simulation.git
@@ -30,7 +31,7 @@
       - Pressure
       - Concentration/moles
       - Volume
-    - Adding of (which does nothing to equilibrium):
+      - Adding of (which does nothing to equilibrium):
         - Inert gases
         - Catalysts 
   - IDEAL GAS LAW: PV = nRT
