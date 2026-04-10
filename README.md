@@ -13,7 +13,7 @@
   npm install
   ```
 
-**IMPORANT:** NodeJS must be downloaded previously.
+**⚠️ IMPORANT:** NodeJS must be downloaded previously.
 
 
 
