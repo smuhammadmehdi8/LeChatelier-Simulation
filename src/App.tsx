@@ -5,14 +5,11 @@ import './App.css'
 function App() {
   return (
 
-
-
     <body> 
       <h1>LeChatelier Simulation</h1>
     </body>
 
-    
-  
+      
   )
 
 }
