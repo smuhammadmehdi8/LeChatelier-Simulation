@@ -3,19 +3,14 @@
   
 ## Requirements
 
-  
   Clone the repo and install dependencies:
- 
+    - nodejs must be previously downloaded
 
   ```bash 
   git clone https://github.com/smuhammadmehdi8/LeChatelier-Simulation.git
   cd LeChatelier-Simulation
   npm install
   ```
-
-**⚠️ IMPORANT:** NodeJS must be downloaded previously.
-
-
 
 ## Usage 
 

@@ -1,0 +1,1 @@
+//will handle chem of pv=nrt and equilibarum 
