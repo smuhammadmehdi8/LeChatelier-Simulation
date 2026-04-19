@@ -7,8 +7,7 @@ function App() {
       <h1>LeChatelier Simulation</h1>
     </body>
 
-    
-  
+      
   )
 
 }

@@ -14,6 +14,8 @@
 
 **⚠️ IMPORANT:** NodeJS must be downloaded previously.
 
+**Note:** If npm install isn't working, make sure your in the Command prompt terminal profile
+
 
 
 ## Usage 
