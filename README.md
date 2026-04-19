@@ -12,6 +12,10 @@
   npm install
   ```
 
+**⚠️ IMPORANT:** NodeJS must be downloaded previously.
+
+
+
 ## Usage 
 
   ```bash 
