@@ -1,64 +1,40 @@
-import {useEffect, useRef} from 'react';
-import * as pixi from 'pixi.js';
-import {Application} from 'pixi.js';
+import { useEffect, useRef } from 'react';
+import { Application } from 'pixi.js';
 import "./index.css"
 
-
-
-
 function App() {
-
   const pixiContainerRef = useRef<HTMLDivElement>(null);
+  const appRef = useRef<Application | null>(null);
 
   useEffect(() => {
-    (async() => {
-  
-    const app = new Application();
-    await app.init(
-      {
-        //resizeTo: window,
+    if (appRef.current) return;  // ← already initialized, bail out
+
+    (async () => {
+      const app = new Application();
+      await app.init({
         width: 1000,
         height: 500,
         backgroundColor: 0x1e2a38,
-        backgroundAlpha: 0.5,
-        antialias: true
-      }
+        antialias: true,
+      });
 
-    ); 
+      appRef.current = app;
+      pixiContainerRef.current?.appendChild(app.canvas);
+      console.log("div ready for pixijs");
+    })();
 
-    pixiContainerRef.current?.appendChild(app.canvas);
-
-    /*
-    if (pixiContainerRef.current) {
-      pixiContainerRef.current.appendChild(app.canvas);
-    } */
-
-})();
-
-
-
-
-    console.log("div ready for pixijs");
-  }, []); 
-
+    return () => {
+      appRef.current?.destroy(true, { children: true });
+      appRef.current = null;
+    };
+  }, []);
 
   return (
-
-
-
-    <div> 
+    <div>
       <h1>LeChatelier Simulation</h1>
-
       <div ref={pixiContainerRef}></div>
-      
     </div>
-
-
-
-      
-  )
-
-
+  );
 }
 
 export default App

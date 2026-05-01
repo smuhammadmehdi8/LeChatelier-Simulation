@@ -4,3 +4,7 @@ h1 {
   color: rgb(148, 28, 28);
   font-size: 30px;
 }
+
+div {
+  align-self: 'center';
+}
