@@ -1,4 +1,3 @@
-import React from "react";
 interface SliderProps {
     title: string;
     min: number;
@@ -8,7 +7,7 @@ interface SliderProps {
 
 export default function Slider({ title, min, max} : SliderProps) {
     return (
-        <div className = "slider-card">
+        <div className = "slider-container">
 
             <span className="slider-title"> {title}</span>
             <input className= "slider-input" type="range" min={min} max={max} />
