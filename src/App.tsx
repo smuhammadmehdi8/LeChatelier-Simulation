@@ -4,6 +4,7 @@ import { Application } from "pixi.js";
 import "./index.css";
 import Slider from "./components/slider";
 import Checkbox from "./components/checkbox";
+import Dropdown from "./components/dropdown";
 
 function App() {
   const pixiContainerRef = useRef<HTMLDivElement>(null);
@@ -52,31 +53,35 @@ function App() {
 
           <div className="inert-catalyst">
             <Checkbox name={"Add Catalyst"} label={"Catalyst"}/>
+            <Dropdown value1={"none"} name1={"None"} value2={"He"} name2={"Helium"} value3={"Ar"} name3="Argon" />
+
           </div>
           <hr id="line" />
           <div className="slider-card">
-            <Slider title={"Temperature"} min={273.15} max={600} />
+            <Slider title={"Temperature (K)"} min={273.15} max={600} step={1.0} value={298.15} />
           </div>
           <hr id="line" />
           <div className="slider-card">
-            <Slider title={"Volume"} min={273.15} max={600} />
-            <Slider title={"Pressure"} min={273.15} max={600} />
+            <Slider title={"Volume (mL)"} min={100.0} max={2000.0} step={10.0} value={1000.0} />
+            <Slider title={"Pressure (atm)"} min={0.1} max={10.0} step={0.1} value={1.0} />
           </div>
 
         </div>
 
-        <div className="canvas" ref={pixiContainerRef}></div>
+        <div 
+          className="canvas" ref={pixiContainerRef}>
+        </div>
 
         <div className="controlPanel-right">
 
           <div className="slider-card">
-            <Slider title={"[Reactant A]"} min={1} max={10} />
-            <Slider title={"[Reactant B]"} min={1} max={10} />
+            <Slider title={"[Reactant A]"} min={0.0} max={3} step={0.1} value={1.0} />
+            <Slider title={"[Reactant B]"} min={0.0} max={3} step={0.1} value={1.0} />
           </div>
 
           <div className="slider-card">
-            <Slider title={"[Product A]"} min={1} max={10} />
-            <Slider title={"[Product B]"} min={1} max={10} />
+            <Slider title={"[Product A]"} min={0.0} max={3} step={0.1} value={0.0} />
+            <Slider title={"[Product B]"} min={0.0} max={3} step={0.1} value={0.0} />
           </div>
 
         </div>

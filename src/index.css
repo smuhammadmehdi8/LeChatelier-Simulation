@@ -15,15 +15,29 @@ h1 {
 .canvas {
   text-align: center;
   display: flex;
+  justify-content: center;
+  border: 3mm ridge rgb(0, 0, 0);
+  overflow: hidden;
+  
+  height: 75vh;
+  min-height: 500px;
+  aspect-ratio: 4 / 5;
+}
+
+.canvas canvas {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 .layout {
   display: flex;
   flex-direction: row;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: flex-start;
-  gap: 10px;
+  gap: 30px;
   margin-top: 50px;
+  flex-wrap: wrap;
 }
 
 .slider-card {
@@ -82,4 +96,8 @@ h1 {
   font-weight: bold;
   font-size: 20px;
   user-select: none;
+}
+
+.dropdown-menu {
+  margin-top: 15px;
 }
