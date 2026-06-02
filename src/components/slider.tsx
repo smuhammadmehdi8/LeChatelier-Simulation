@@ -1,4 +1,4 @@
-import { useState, type HtmlHTMLAttributes } from "react";
+import {useState} from "react";
 
 interface SliderProps {
     title: string;
