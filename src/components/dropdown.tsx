@@ -13,14 +13,14 @@ interface DropdownProps {
 export default function Dropdown({label, value1, value2, value3, name1, name2, name3} : DropdownProps) {
     return (
         <div className="dropdown-container"> 
-
-            <label className="dropdown-label">{label}</label>
-            <select className="dropdown-menu"> 
-                <option value={value1}>{name1}</option>
-                <option value={value2}>{name2}</option>
-                <option value={value3}>{name3}</option>
-            </select>
-
+            <div className="dropdown-wrapper">
+                <select className="dropdown-select"> 
+                    <option value={value1}>{name1}</option>
+                    <option value={value2}>{name2}</option>
+                    <option value={value3}>{name3}</option>
+                </select>
+                <label className="dropdown-label">{label}</label>
+            </div>
         </div>
     )
 }
