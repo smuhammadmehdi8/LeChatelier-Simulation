@@ -237,7 +237,9 @@ h1 {
   width: 290px;
 }
 
+.checkbox-container input[type="checkbox"] {
+  transform: scale(1.25);
+  margin-right: 8px;
+}
 
-
- 
 
