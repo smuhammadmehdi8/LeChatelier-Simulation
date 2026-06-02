@@ -53,12 +53,12 @@ function App() {
 
           <div className="inert-catalyst">
             <Checkbox name={"Add Catalyst"} label={"Catalyst"}/>
-            <Dropdown value1={"none"} name1={"None"} value2={"He"} name2={"Helium"} value3={"Ar"} name3="Argon" />
+            <Dropdown label={"Inert Gas"} value1={"none"} name1={"None"} value2={"He"} name2={"Helium"} value3={"Ar"} name3="Argon" />
 
           </div>
           <hr id="line" />
           <div className="slider-card">
-            <Slider title={"Temperature (K)"} min={273.15} max={600} step={1.0} value={298.15} />
+            <Slider title={"Temperature (K)"} min={273.15} max={600.0} step={0.05} value={298.15} />
           </div>
           <hr id="line" />
           <div className="slider-card">
@@ -73,19 +73,19 @@ function App() {
         </div>
 
         <div className="controlPanel-right">
+          <div className="vertical-card"> 
+            <div className="slider-card">
+              <Slider title={"[Reactant A]"} min={0.0} max={3} step={0.1} value={1.0} orientation="vertical" />
+              <Slider title={"[Reactant B]"} min={0.0} max={3} step={0.1} value={1.0} orientation="vertical" />
+            </div>
 
-          <div className="slider-card">
-            <Slider title={"[Reactant A]"} min={0.0} max={3} step={0.1} value={1.0} />
-            <Slider title={"[Reactant B]"} min={0.0} max={3} step={0.1} value={1.0} />
+            <div className="slider-card">
+              <Slider title={"[Product A]"} min={0.0} max={3} step={0.1} value={0.0} orientation="vertical" />
+              <Slider title={"[Product B]"} min={0.0} max={3} step={0.1} value={0.0} orientation="vertical" />
+            </div>
+
           </div>
-
-          <div className="slider-card">
-            <Slider title={"[Product A]"} min={0.0} max={3} step={0.1} value={0.0} />
-            <Slider title={"[Product B]"} min={0.0} max={3} step={0.1} value={0.0} />
-          </div>
-
         </div>
-
         <div className="graphs">{/* placeholder div for popout graphs */}</div>
       </div>
     </div>

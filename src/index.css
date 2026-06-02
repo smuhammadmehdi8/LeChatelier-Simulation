@@ -66,9 +66,13 @@ h1 {
 
 .slider-input {
   width: 100%;
-  cursor: grabbing;
+  cursor: grab;
   accent-color: rgb(0, 0, 139);
   margin-top: 10px;
+}
+
+.slider-input:active {
+  cursor: grabbing;
 }
 
 .canvas {
@@ -98,6 +102,88 @@ h1 {
   user-select: none;
 }
 
+.dropdown-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: 20px;
+}
+
+
 .dropdown-menu {
   margin-top: 15px;
 }
+
+.value-box {
+  width: 65px;
+  padding: 5px;
+  text-align: center;
+  font-size: 14px;
+  font-family: 'Trebuchet MS';
+  font-weight: bold;
+  color: #ffffff;
+  background-color: #2d3748; 
+  border: 2px solid #1a202c;
+  border-radius: 6px;
+  outline: none;
+}
+
+.value-box::-webkit-inner-spin-button, 
+.value-box::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+
+.vertical-card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.vertical-card .slider-card {
+  flex-direction: row; 
+  justify-content: space-around;
+  align-items: flex-start;
+  height: 260px;
+}
+
+.slider-container.vertical {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.slider-container.vertical .slider-controls {
+  display: flex;
+  flex-direction: column; 
+  align-items: center;
+  gap: 12px;
+  height: 100%;
+}
+
+.slider-container.vertical .slider-input {
+  -webkit-appearance: slider-vertical; 
+  appearance: slider-vertical;
+  width: 12px;
+  height: 140px; 
+  padding: 0;
+  margin: 10px 0;
+  cursor: grab;
+}
+
+.controlPanel-left .value-box {
+  margin-top: 10px;
+}
+
+.controlPanel-left .slider-card{
+  width: 300px;
+}
+
+.controlPanel-left .slider-card .slider-input {
+  width: 290px;
+}
+
+ 
+
