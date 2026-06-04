@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 //import * as pixi from "pixi.js";
 import { Application } from "pixi.js";
 import "./index.css";
@@ -8,6 +8,12 @@ import Dropdown from "./components/dropdown";
 
 function App() {
   const pixiContainerRef = useRef<HTMLDivElement>(null);
+
+  const [volUnit, setVolUnit] = useState<string>("(L)");
+  const [volume, setVolume] = useState<number>(1.0);
+
+  const [tempUnit, setTempUnit] = useState<string>("(K)"); 
+  const [temp, setTemp] = useState<number>(298.15); 
 
   useEffect(() => {
     let isMounted: boolean = true;
@@ -42,9 +48,10 @@ function App() {
     };
   }, []);
 
+
   return (
     <div>
-      <h1>LeChatelier Simulation</h1>
+      <h1>LeChatelier's Principle</h1>
 
       <div className="layout">
 
@@ -58,11 +65,32 @@ function App() {
           </div>
           <hr id="line" />
           <div className="slider-card">
-            <Slider title={"Temperature (K)"} min={273.15} max={600.0} step={0.05} value={298.15} />
+            <Slider title={"Temperature"} min={tempUnit === "(K)" ? 273.15 : 0} max={tempUnit === "(K)" ? 600.0 : 326.85} step={tempUnit === "(K)" ? 0.05 : 1.0} 
+                    value={tempUnit === "(K)" ? temp : temp - 273.15}
+                    unitOptions={["(K)", "(C)"]}
+                    currentUnit={tempUnit}
+                    onUnitChange={(newUnit) => {
+                      setTempUnit(newUnit);
+                    }}
+                    onValueChange={(newValue) => {
+                      setTemp(tempUnit === "(K)" ? newValue : newValue + 273.15)
+                    }}       
+            />
           </div>
           <hr id="line" />
           <div className="slider-card">
-            <Slider title={"Volume (mL)"} min={100.0} max={2000.0} step={10.0} value={1000.0} />
+            <Slider title={"Volume"} 
+                    min={volUnit === "(L)" ? 0.1 : 100} max={volUnit === "(L)" ? 2 : 2000} step={volUnit === "(L)" ? 0.1 : 10.0} 
+                    value={volUnit === "(L)" ? volume : volume * 1000} 
+                    unitOptions={["(L)", "(mL)"]}
+                    currentUnit={volUnit}
+                    onUnitChange={(newUnit) => {
+                      setVolUnit(newUnit);
+                    }}
+                    onValueChange={(newValue) => {
+                      setVolume(volUnit === "(L)" ? newValue: newValue / 1000);
+                    }}
+            />
             <Slider title={"Pressure (atm)"} min={0.1} max={10.0} step={0.1} value={1.0} />
           </div>
 

@@ -7,16 +7,30 @@ interface SliderProps {
     step: number;
     value: number;
     orientation?: "horizontal" | "vertical";
+    unitOptions?: string[];
+    currentUnit?: string;
+    onUnitChange?: (newUnit: string) => void;
+    onValueChange?: (newValue: number) => void;
 }
 
-export default function Slider({ title, min, max, step, value, orientation="horizontal"} : SliderProps) {
+export default function Slider({ title, min, max, step, value, orientation="horizontal", unitOptions, currentUnit, onUnitChange, onValueChange} : SliderProps) {
     const [sliderValue, setSliderValue] = useState<number>(value);
     const [textValue, setTextValue] = useState<string>(String(value));
+
+    const [prevValueProp, setPrevValueProp] = useState<number>(value);
+
+    if (value !== prevValueProp) {
+        setPrevValueProp(value);
+        setSliderValue(value);
+        setTextValue(String(value));
+    }
+
 
     const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const num = Number(e.target.value);
         setSliderValue(num);
         setTextValue(String(num));
+        onValueChange?.(num);
     };
 
     const handleBoxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,6 +46,7 @@ export default function Slider({ title, min, max, step, value, orientation="hori
 
         setSliderValue(val);
         setTextValue(String(val));
+        onValueChange?.(val);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -43,8 +58,21 @@ export default function Slider({ title, min, max, step, value, orientation="hori
     return (
         <div className={`slider-container ${orientation}`}>
 
-            <span className="slider-title"> {title}</span>
 
+
+            <div className="slider-header">
+                <span className="slider-title"> {title}</span>
+
+                {unitOptions && onUnitChange && (
+                    <select className="unit-selecter" value={currentUnit} onChange={(e) => onUnitChange(e.target.value)}> 
+                        {unitOptions.map(unit => (
+                        <option key={unit} value={unit}>{unit}</option>
+                        ))}
+                    </select>
+                )}
+
+            </div>
+            
             <div className="slider-controls"> 
                 <input className="slider-input" 
                         type="range" 
