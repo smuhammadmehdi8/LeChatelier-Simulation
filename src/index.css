@@ -68,7 +68,7 @@ h1 {
   width: 100%;
   cursor: grab;
   accent-color: rgb(0, 0, 139);
-  margin-top: 10px;
+  margin-top: 4px;
 }
 
 .slider-input:active {
@@ -121,9 +121,9 @@ h1 {
   padding: 12px 14px;
   font-family: 'Trebuchet MS';
   font-size: 16px;
-  color: rgba(0, 0, 0, 0.87); /* Modern off-black text */
-  background-color: #ffffff; /* Clean white background matching your card */
-  border: 1px solid rgba(0, 0, 0, 0.23); /* Elegant, thin Material border */
+  color: rgba(0, 0, 0, 0.87); 
+  background-color: #ffffff; 
+  border: 1px solid rgba(0, 0, 0, 0.23); 
   border-radius: 4px;
   cursor: pointer;
   outline: none;

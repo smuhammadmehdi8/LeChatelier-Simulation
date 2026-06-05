@@ -5,15 +5,36 @@ import "./index.css";
 import Slider from "./components/slider";
 import Checkbox from "./components/checkbox";
 import Dropdown from "./components/dropdown";
+import {calculatePressure, calculateVolume} from "./engines/chemistry-math";
 
 function App() {
-  const pixiContainerRef = useRef<HTMLDivElement>(null);
-
   const [volUnit, setVolUnit] = useState<string>("(L)");
   const [volume, setVolume] = useState<number>(1.0);
 
   const [tempUnit, setTempUnit] = useState<string>("(K)"); 
   const [temp, setTemp] = useState<number>(298.15); 
+
+  const [pressure, setPressure] = useState<number>(1.0);
+  const totalMoles = 2.0; //placeholder
+
+
+  const handleVolumeChange = (newVolume : number) => {
+    const volumeInL = volUnit === "(L)" ? newVolume : newVolume / 1000;
+
+    setVolume(volumeInL);
+    const newPressure = calculatePressure(volumeInL, temp, totalMoles);
+    setPressure(newPressure);
+  };
+
+  const handlePressureChange = (newPressure : number) => {
+    setPressure(newPressure);
+
+    const newVolume = calculateVolume(newPressure, temp, totalMoles);
+    setVolume(newVolume);
+  }
+
+
+  const pixiContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let isMounted: boolean = true;
@@ -87,11 +108,12 @@ function App() {
                     onUnitChange={(newUnit) => {
                       setVolUnit(newUnit);
                     }}
-                    onValueChange={(newValue) => {
-                      setVolume(volUnit === "(L)" ? newValue: newValue / 1000);
-                    }}
+                    onValueChange={handleVolumeChange}
             />
-            <Slider title={"Pressure (atm)"} min={0.1} max={10.0} step={0.1} value={1.0} />
+            <Slider title={"Pressure (atm)"} 
+                    min={0.1} max={50.0} step={0.1} value={pressure}
+                    onValueChange={handlePressureChange} 
+            />
           </div>
 
         </div>

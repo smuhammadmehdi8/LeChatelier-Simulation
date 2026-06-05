@@ -38,12 +38,12 @@
       - Concentration/moles
       - Volume
       - Adding of (which does nothing to equilibrium):
-        - Inert gases
+        - Inert gases (when volume is constant)
         - Catalysts 
   - IDEAL GAS LAW: PV = nRT
   - An arrow that shows which way adding a "disrupter" will cause the system to shift in order to reestablish equilibrium
   - Graph which shows the concentrations as they slowly increase/decrease into equilibrium
-  - Different catalysts that speed up the reaction in different ways
+  - Cataylst which speeds up the reaction and lowers the activation energy
   - Different molecule sizes to display effect of mass on molecule speed, thus affecting equilibrium; for example, how the temperature affects the velocities of those particles, thus affecting the overall reaction (collision theory) --> effects if activaiton energy has been reached
     - At a constant temperature, heavier molecules move slower than lighter ones.
 
