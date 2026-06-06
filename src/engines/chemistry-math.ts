@@ -1,10 +1,3 @@
-//PV = nRT
-// P = (nRT)/V
-// V = (nRT) / P
-
-
-
-
 const R = 0.08206; //unit: L*atm / (mol*K)
 
 export const calculatePressure = (volumeL: number, tempK: number, totalMoles: number) : number => {
@@ -12,8 +5,8 @@ export const calculatePressure = (volumeL: number, tempK: number, totalMoles: nu
         return 0;
     }
     const pressure = (totalMoles*R*tempK) / (volumeL);
-    
-    return Math.round(pressure * 100) / 100;
+
+    return Number(pressure.toFixed(2));
 }
 
 export const calculateVolume = (pressureATM: number, tempK: number, totalMoles: number) : number => {
@@ -22,5 +15,24 @@ export const calculateVolume = (pressureATM: number, tempK: number, totalMoles: 
     }
     const volume = (totalMoles*R*tempK) / (pressureATM);
     
-    return Math.round(volume * 100) / 100;
+    return Number(volume.toFixed(2));
 }
+
+export const REACTIONS = {
+  exo: {
+    label: "Exothermic: N₂ + 3H₂ ⇌ 2NH₃",
+    reactants: ["N2", "H2"],
+    products: ["NH3"]
+  },
+  endo: {
+    label: "Endothermic: N₂O₄ ⇌ 2NO₂",
+    reactants: ["N2O4"],
+    products: ["NO2"]
+  },
+  equi: {
+    label: "Equimolar: H₂ + I₂ ⇌ 2HI",
+    reactants: ["H2", "I2"],
+    products: ["HI"]
+  }
+};
+

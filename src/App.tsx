@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-//import * as pixi from "pixi.js";
-import { Application } from "pixi.js";
+import { Application, Graphics, Text } from "pixi.js";
 import "./index.css";
 import Slider from "./components/slider";
 import Checkbox from "./components/checkbox";
 import Dropdown from "./components/dropdown";
 import {calculatePressure, calculateVolume} from "./engines/chemistry-math";
+import { initSimulation, updateSimulation } from "./engines/pixi";
 
 function App() {
   const [volUnit, setVolUnit] = useState<string>("(L)");
@@ -15,7 +15,7 @@ function App() {
   const [temp, setTemp] = useState<number>(298.15); 
 
   const [pressure, setPressure] = useState<number>(1.0);
-  const totalMoles = 2.0; //placeholder
+  const totalMoles = 0.04; //placeholder
 
 
   const handleVolumeChange = (newVolume : number) => {
@@ -36,39 +36,42 @@ function App() {
 
   const pixiContainerRef = useRef<HTMLDivElement>(null);
 
+  const appRef = useRef<Application | null>(null);
+  const pistonRef = useRef<Graphics | null>(null);
+  const warningTextRef = useRef<Text | null>(null);
+
   useEffect(() => {
     let isMounted: boolean = true;
-    let app: Application | null = null;
+    
+    if (pixiContainerRef.current) {
+      initSimulation(pixiContainerRef.current).then(({app, pistonLid, warningText}) => {
+        if (!isMounted) {
+          app.destroy(true, { children: true, texture: true });
+          return;
+        }
+        appRef.current = app;
+        pistonRef.current = pistonLid;
+        warningTextRef.current = warningText;
 
-    (async () => {
-      const newApp = new Application();
-      await newApp.init({
-        width: 400,
-        height: 500,
-        backgroundColor: 0x000000,
-        backgroundAlpha: 1, //background transperncy
-        antialias: true,
+        updateSimulation(app, volume, pressure, pistonLid, warningText);
       });
-
-      if (!isMounted) {
-        newApp.destroy(true, { children: true, texture: true });
-        return;
-      }
-
-      app = newApp;
-      pixiContainerRef.current?.appendChild(app.canvas);
-
-      console.log("div ready for pixijs");
-    })();
+    }
 
     return () => {
       isMounted = false;
-      if (app) {
-        app.destroy(true, { children: true, texture: true });
+      if (appRef.current) {
+        appRef.current.destroy(true, {children: true, texture: true});
       }
     };
+    
+
   }, []);
 
+  useEffect(() => {
+    if (appRef.current && pistonRef.current && warningTextRef.current) {
+      updateSimulation(appRef.current, volume, pressure, pistonRef.current, warningTextRef.current);
+    }
+  }, [volume, pressure]);
 
   return (
     <div>

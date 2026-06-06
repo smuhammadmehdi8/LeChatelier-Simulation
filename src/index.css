@@ -16,7 +16,7 @@ h1 {
   text-align: center;
   display: flex;
   justify-content: center;
-  border: 3mm ridge rgb(0, 0, 0);
+  /*border: 3mm solid rgb(0, 0, 0);*/
   overflow: hidden;
   
   height: 75vh;
@@ -75,10 +75,6 @@ h1 {
   cursor: grabbing;
 }
 
-.canvas {
-  border: 3mm ridge black;
-  overflow: hidden;
-}
 
 #line {
   width: 280px;
@@ -269,9 +265,7 @@ h1 {
   background-size: 10px auto;
 }
 
-.unit-switcher:hover {
-  text-decoration: underline;
-}
+
 
 
 
