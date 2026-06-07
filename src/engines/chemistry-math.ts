@@ -1,22 +1,33 @@
-const R = 0.08206; //unit: L*atm / (mol*K)
+export const VOLUME_RANGE = {
+  min: 0.5,
+  max: 2.0,
+};
 
-export const calculatePressure = (volumeL: number, tempK: number, totalMoles: number) : number => {
-    if (volumeL <= 0) {
-        return 0;
-    }
-    const pressure = (totalMoles*R*tempK) / (volumeL);
+export const PRESSURE_RANGE = {
+  min: 0.5,
+  max: 5.0,
+};
 
-    return Number(pressure.toFixed(2));
-}
 
-export const calculateVolume = (pressureATM: number, tempK: number, totalMoles: number) : number => {
-    if (pressureATM <= 0) {
-        return 0;
-    }
-    const volume = (totalMoles*R*tempK) / (pressureATM);
-    
-    return Number(volume.toFixed(2));
-}
+//if i forget in the future, the position is for how far the volume is between the volume min amd max so we can route that to the opposie of the pressure slider
+export const calculatePressureFromVolume = (volumeL: number): number => {
+  const volumePosition = (volumeL - VOLUME_RANGE.min) / (VOLUME_RANGE.max - VOLUME_RANGE.min); 
+
+  const pressure = PRESSURE_RANGE.max - volumePosition * (PRESSURE_RANGE.max - PRESSURE_RANGE.min);
+
+  return Math.round(pressure * 10) / 10;
+};
+
+//basically the same thing as the previous comment
+export const calculateVolumeFromPressure = (pressureATM: number): number => {
+  const pressurePosition = (pressureATM - PRESSURE_RANGE.min) / (PRESSURE_RANGE.max - PRESSURE_RANGE.min);
+
+  const volume =
+    VOLUME_RANGE.max -
+    pressurePosition * (VOLUME_RANGE.max - VOLUME_RANGE.min);
+
+  return Math.round(volume * 10) / 10;
+};
 
 export const REACTIONS = {
   exo: {

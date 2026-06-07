@@ -4,7 +4,7 @@ import "./index.css";
 import Slider from "./components/slider";
 import Checkbox from "./components/checkbox";
 import Dropdown from "./components/dropdown";
-import {calculatePressure, calculateVolume} from "./engines/chemistry-math";
+import {VOLUME_RANGE, PRESSURE_RANGE, calculatePressureFromVolume, calculateVolumeFromPressure} from "./engines/chemistry-math";
 import { initSimulation, updateSimulation } from "./engines/pixi";
 
 function App() {
@@ -15,21 +15,20 @@ function App() {
   const [temp, setTemp] = useState<number>(298.15); 
 
   const [pressure, setPressure] = useState<number>(1.0);
-  const totalMoles = 0.04; //placeholder
 
 
   const handleVolumeChange = (newVolume : number) => {
     const volumeInL = volUnit === "(L)" ? newVolume : newVolume / 1000;
 
     setVolume(volumeInL);
-    const newPressure = calculatePressure(volumeInL, temp, totalMoles);
+    const newPressure = calculatePressureFromVolume(volumeInL);
     setPressure(newPressure);
   };
 
   const handlePressureChange = (newPressure : number) => {
     setPressure(newPressure);
 
-    const newVolume = calculateVolume(newPressure, temp, totalMoles);
+    const newVolume = calculateVolumeFromPressure(newPressure);
     setVolume(newVolume);
   }
 
@@ -104,7 +103,8 @@ function App() {
           <hr id="line" />
           <div className="slider-card">
             <Slider title={"Volume"} 
-                    min={volUnit === "(L)" ? 0.1 : 100} max={volUnit === "(L)" ? 2 : 2000} step={volUnit === "(L)" ? 0.1 : 10.0} 
+                    min={volUnit === "(L)" ? (VOLUME_RANGE.min) : (VOLUME_RANGE.min * 1000)} max={volUnit === "(L)" ? (VOLUME_RANGE.max) : (VOLUME_RANGE.max * 1000)} 
+                    step={volUnit === "(L)" ? 0.1 : 10.0} 
                     value={volUnit === "(L)" ? volume : volume * 1000} 
                     unitOptions={["(L)", "(mL)"]}
                     currentUnit={volUnit}
@@ -114,7 +114,7 @@ function App() {
                     onValueChange={handleVolumeChange}
             />
             <Slider title={"Pressure (atm)"} 
-                    min={0.1} max={50.0} step={0.1} value={pressure}
+                    min={PRESSURE_RANGE.min} max={PRESSURE_RANGE.max} step={0.1} value={pressure}
                     onValueChange={handlePressureChange} 
             />
           </div>
