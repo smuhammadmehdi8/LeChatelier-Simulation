@@ -1,4 +1,4 @@
-import { Application, Graphics, Text, Ticker } from "pixi.js";
+import { Application, Graphics } from "pixi.js";
 
 export const initSimulation = async (container : HTMLDivElement) => {
     const app = new Application();
@@ -23,52 +23,18 @@ export const initSimulation = async (container : HTMLDivElement) => {
     pistonLid.y = 50;
     app.stage.addChild(pistonLid);
 
-    const warningText = new Text({
-        text: "WARNING: CONTAINER RUPTURED",
-        style: {
-            fontFamily: 'Trebuchet MS',
-            fontSize: 22,
-            fill: 0xFF0000,
-            fontWeight: 'bold',
-            align: 'center'
-        }
-    });
-    warningText.x = 200 - warningText.width / 2; 
-    warningText.y = 250;
-    warningText.visible = false;
-    app.stage.addChild(warningText);
-
     container.appendChild(app.canvas);
     
 
-    return { app, pistonLid, warningText };
+    return { app, pistonLid };
 };
 
+//function calculates piston position
+export const updateSimulation = (volume: number, piston: Graphics) => {
 
-let isExploded: boolean = false;
-let explodeTicker: (ticker: Ticker) => void;
+    const minVol = 0.1; 
+    const maxVol = 2.0;
 
-export const updateSimulation = (app:Application, volume: number, pressure: number, piston: Graphics, warning: Text) => {
-    if (pressure > 50) {
-        if (!isExploded) {
-            isExploded = true;
-            warning.visible = true;
-
-            explodeTicker = (ticker) => {
-                piston.y -= 4 * ticker.deltaTime;
-
-                if (piston.y < -300) {
-                    app.ticker.remove(explodeTicker);
-                }
-            };
-            app.ticker.add(explodeTicker);
-        }
-        return;
-    }
-
-    warning.visible = false;
-
-    const minVol = 0.1; const maxVol = 2.0;
     const topY = 50;
     const bottomY = 460;
 

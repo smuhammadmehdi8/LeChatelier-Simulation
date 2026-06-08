@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { Application, Graphics, Text } from "pixi.js";
+import { Application, Graphics } from "pixi.js";
 import "./index.css";
 import Slider from "./components/slider";
 import Checkbox from "./components/checkbox";
 import Dropdown from "./components/dropdown";
-import {VOLUME_RANGE, PRESSURE_RANGE, calculatePressureFromVolume, calculateVolumeFromPressure} from "./engines/chemistry-math";
+import {VOLUME_RANGE, PRESSURE_RANGE, calculatePressureFromVolume, calculateVolumeFromPressure, REACTIONS} from "./engines/chemistry-math";
 import { initSimulation, updateSimulation } from "./engines/pixi";
 
 function App() {
@@ -14,8 +14,12 @@ function App() {
   const [tempUnit, setTempUnit] = useState<string>("(K)"); 
   const [temp, setTemp] = useState<number>(298.15); 
 
-  const [pressure, setPressure] = useState<number>(1.0);
+  const [pressure, setPressure] = useState<number>(calculatePressureFromVolume(1.0));
 
+  const [inertGas, setInertGas] = useState<string>("none");
+
+  const [selectedReactionKey, setSelectedReactionKey] = useState<keyof typeof REACTIONS>("exo");
+  //const selectedReaction = REACTIONS[selectedReactionKey];
 
   const handleVolumeChange = (newVolume : number) => {
     const volumeInL = volUnit === "(L)" ? newVolume : newVolume / 1000;
@@ -37,22 +41,20 @@ function App() {
 
   const appRef = useRef<Application | null>(null);
   const pistonRef = useRef<Graphics | null>(null);
-  const warningTextRef = useRef<Text | null>(null);
 
   useEffect(() => {
     let isMounted: boolean = true;
     
     if (pixiContainerRef.current) {
-      initSimulation(pixiContainerRef.current).then(({app, pistonLid, warningText}) => {
+      initSimulation(pixiContainerRef.current).then(({app, pistonLid}) => {
         if (!isMounted) {
           app.destroy(true, { children: true, texture: true });
           return;
         }
         appRef.current = app;
         pistonRef.current = pistonLid;
-        warningTextRef.current = warningText;
 
-        updateSimulation(app, volume, pressure, pistonLid, warningText);
+        updateSimulation(volume, pistonLid);
       });
     }
 
@@ -67,14 +69,30 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (appRef.current && pistonRef.current && warningTextRef.current) {
-      updateSimulation(appRef.current, volume, pressure, pistonRef.current, warningTextRef.current);
+    if (appRef.current && pistonRef.current) {
+      updateSimulation(volume, pistonRef.current);
     }
   }, [volume, pressure]);
 
   return (
     <div>
       <h1>LeChatelier's Principle</h1>
+
+    <div className="reaction-display">
+      <select
+        className="reaction-display-select"
+        value={selectedReactionKey}
+        onChange={(event) => {
+          setSelectedReactionKey(event.target.value as keyof typeof REACTIONS);
+        }}
+      >
+        {Object.entries(REACTIONS).map(([key, reaction]) => (
+          <option key={key} value={key}>
+            {reaction.label}
+          </option>
+        ))}
+      </select>
+    </div>
 
       <div className="layout">
 
@@ -83,7 +101,17 @@ function App() {
 
           <div className="inert-catalyst">
             <Checkbox name={"Add Catalyst"} label={"Catalyst"}/>
-            <Dropdown label={"Inert Gas"} value1={"none"} name1={"None"} value2={"He"} name2={"Helium"} value3={"Ar"} name3="Argon" />
+            <Dropdown label={"Inert Gas"} 
+                      value={inertGas}
+                      options={[
+                        {value: "none", label: "None"},
+                        {value: "He", label: "Helium"},
+                        {value: "Ar", label: "Argon"}
+                      ]}
+                      onChange={setInertGas}
+            />
+
+
 
           </div>
           <hr id="line" />

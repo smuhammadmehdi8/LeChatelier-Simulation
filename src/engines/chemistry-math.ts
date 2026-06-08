@@ -32,18 +32,18 @@ export const calculateVolumeFromPressure = (pressureATM: number): number => {
 export const REACTIONS = {
   exo: {
     label: "Exothermic: N₂ + 3H₂ ⇌ 2NH₃",
-    reactants: ["N2", "H2"],
-    products: ["NH3"]
+    reactants: ["N₂", "H₂"],
+    products: ["NH₃"]
   },
   endo: {
     label: "Endothermic: N₂O₄ ⇌ 2NO₂",
-    reactants: ["N2O4"],
-    products: ["NO2"]
+    reactants: ["N₂O₄"],
+    products: ["NO₂"]
   },
   equi: {
     label: "Equimolar: H₂ + I₂ ⇌ 2HI",
-    reactants: ["H2", "I2"],
-    products: ["HI"]
+    reactants: ["H₂", "I₂"],
+    products: ["2HI"]
   }
 };
 

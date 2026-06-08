@@ -1,26 +1,35 @@
+interface DropdownOption {
+  value: string;
+  label: string;
+}
 
 interface DropdownProps {
-    label: string;
-    value1: string;
-    value2: string;
-    value3: string;
-    name1: string;
-    name2: string;
-    name3: string;
+  label: string;
+  value: string;
+  options: DropdownOption[];
+  onChange: (newValue: string) => void;
 }
 
-
-export default function Dropdown({label, value1, value2, value3, name1, name2, name3} : DropdownProps) {
+export default function Dropdown({label, value, options, onChange}: DropdownProps) {
     return (
-        <div className="dropdown-container"> 
-            <div className="dropdown-wrapper">
-                <select className="dropdown-select"> 
-                    <option value={value1}>{name1}</option>
-                    <option value={value2}>{name2}</option>
-                    <option value={value3}>{name3}</option>
-                </select>
-                <label className="dropdown-label">{label}</label>
-            </div>
+        <div className="dropdown-container">
+        <div className="dropdown-wrapper">
+            <select
+            className="dropdown-select"
+            value={value}
+            onChange={(event) => {
+                onChange(event.target.value);
+            }}
+            >
+            {options.map((option) => (
+                <option key={option.value} value={option.value}>
+                {option.label}
+                </option>
+            ))}
+            </select>
+
+            <label className="dropdown-label">{label}</label>
         </div>
-    )
-}
+        </div>
+    );
+    }
