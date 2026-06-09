@@ -387,4 +387,11 @@ h1 {
   font-weight: 700;
 }
 
+.disturbance-display.establishing {
+  color: #5a3d00;
+  border-color: #e0a800;
+  background: #fff6d8;
+  animation: disturbance-blink 0.9s ease-in-out infinite alternate;
+}
+
 

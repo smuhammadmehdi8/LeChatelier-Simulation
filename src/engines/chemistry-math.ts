@@ -47,8 +47,8 @@ export const REACTIONS = {
     productGasMoles: 2,
   },
   equi: {
-    label: "Equimolar: H₂ + I₂ ⇌ 2HI",
-    thermalType: "neutral",
+    label: "Equimolar / No Heat Effect: H₂ + I₂ ⇌ 2HI",
+    thermalType: "thermoneutral",
     reactants: ["H₂", "I₂"],
     products: ["HI"],
     reactantGasMoles: 2,
@@ -109,7 +109,7 @@ export const getShiftDirection = (reaction: (typeof REACTIONS)[keyof typeof REAC
   }
 
   if (disturbance.type === "temperature") {
-    if (reaction.thermalType === "neutral") {
+    if (reaction.thermalType === "thermoneutral") {
       return "none";
     }
 
@@ -172,5 +172,73 @@ export const getSpeciesResponseDirection = (shiftDirection: ShiftDirection, spec
 
   return "none";
 }; 
+
+
+const CONCENTRATION_RESPONSE_DELTA = 0.3;
+
+const clampConcentration = (value: number): number => {
+  const clampedValue = Math.max(0, Math.min(3, value));
+
+  return Math.round(clampedValue * 10) / 10;
+};
+
+export const calculateReestablishedConcentrations = (reaction: (typeof REACTIONS)[keyof typeof REACTIONS], currentConcentrations: Record<string, number>, shiftDirection: ShiftDirection): Record<string, number> => {
+  const nextConcentrations: Record<string, number> = {
+    ...currentConcentrations,
+  };
+
+  if (shiftDirection === "none") {
+    return nextConcentrations;
+  }
+
+  const reactantChange = shiftDirection === "reactants" ? CONCENTRATION_RESPONSE_DELTA : -CONCENTRATION_RESPONSE_DELTA;
+
+  const productChange = shiftDirection === "products" ? CONCENTRATION_RESPONSE_DELTA : -CONCENTRATION_RESPONSE_DELTA;
+
+  reaction.reactants.forEach((reactant) => {
+    const currentValue = currentConcentrations[reactant] ?? 0;
+
+    nextConcentrations[reactant] = clampConcentration(
+      currentValue + reactantChange
+    );
+  });
+
+  reaction.products.forEach((product) => {
+    const currentValue = currentConcentrations[product] ?? 0;
+
+    nextConcentrations[product] = clampConcentration(
+      currentValue + productChange
+    );
+  });
+
+  return nextConcentrations;
+};
+
+const INITIAL_EQUILIBRIUM_REACTANT_DROP = 0.3;
+const INITIAL_EQUILIBRIUM_PRODUCT_GAIN = 0.6;
+
+export const calculateInitialEquilibriumConcentrations = (reaction: (typeof REACTIONS)[keyof typeof REACTIONS], startingConcentrations: Record<string, number>): Record<string, number> => {
+  const equilibriumConcentrations: Record<string, number> = {
+    ...startingConcentrations,
+  };
+
+  reaction.reactants.forEach((reactant) => {
+    const currentValue = startingConcentrations[reactant] ?? 0;
+
+    equilibriumConcentrations[reactant] = clampConcentration(
+      currentValue - INITIAL_EQUILIBRIUM_REACTANT_DROP
+    );
+  });
+
+  reaction.products.forEach((product) => {
+    const currentValue = startingConcentrations[product] ?? 0;
+
+    equilibriumConcentrations[product] = clampConcentration(
+      currentValue + INITIAL_EQUILIBRIUM_PRODUCT_GAIN
+    );
+  });
+
+  return equilibriumConcentrations;
+};
 
 

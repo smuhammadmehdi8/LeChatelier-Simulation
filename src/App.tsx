@@ -4,7 +4,7 @@ import "./index.css";
 import Slider from "./components/slider";
 import Checkbox from "./components/checkbox";
 import Dropdown from "./components/dropdown";
-import {VOLUME_RANGE, PRESSURE_RANGE, calculatePressureFromVolume, calculateVolumeFromPressure, REACTIONS, getChangeDirection, type Disturbance, type SpeciesSide, type ShiftDirection,  getShiftDirection, getSpeciesResponseDirection, type ChangeDirection} from "./engines/chemistry-math";
+import {VOLUME_RANGE, PRESSURE_RANGE, calculatePressureFromVolume, calculateVolumeFromPressure, REACTIONS, getChangeDirection, type Disturbance, type SpeciesSide, type ShiftDirection,  getShiftDirection, getSpeciesResponseDirection, type ChangeDirection, calculateReestablishedConcentrations, calculateInitialEquilibriumConcentrations} from "./engines/chemistry-math";
 import { initSimulation, updateSimulation } from "./engines/pixi";
 
 
@@ -35,6 +35,7 @@ import { initSimulation, updateSimulation } from "./engines/pixi";
 
 
 type SimulationStatus =
+  | "establishing"
   | "equilibrium"
   | "disrupted"
   | "reestablished"
@@ -86,10 +87,11 @@ function App() {
   );
 
   const [lastDisturbance, setLastDisturbance] = useState<Disturbance | null>(null);
-  const [simulationStatus, setSimulationStatus] = useState<SimulationStatus>("equilibrium");
+  const [simulationStatus, setSimulationStatus] = useState<SimulationStatus>("establishing");
   const shiftDirection = getShiftDirection(selectedReaction, lastDisturbance);
 
 
+  
   const markDisturbed = (disturbance: Disturbance) => {
     setLastDisturbance(disturbance);
 
@@ -100,6 +102,13 @@ function App() {
 
     if (disturbance.direction === "none") {
       setSimulationStatus("equilibrium");
+      return;
+    }
+
+    const resultingShift = getShiftDirection(selectedReaction, disturbance);
+
+    if (resultingShift === "none") {
+      setSimulationStatus("noShift");
       return;
     }
 
@@ -169,7 +178,7 @@ function App() {
     setInertGas(DEFAULT_INERT_GAS);
     setCatalystActive(DEFAULT_CATALYST_ACTIVE);
     setLastDisturbance(null);
-    setSimulationStatus("equilibrium");
+    setSimulationStatus("establishing");
 
     setConcentrations(buildDefaultConcentrations(newReaction));
   };
@@ -259,14 +268,49 @@ function App() {
       return;
     }
 
+    if (shiftDirection === "none") {
+      setSimulationStatus("noShift");
+      return;
+    }
+
+    const reestablishmentTime = catalystActive ? 600 : 1500;
+
     const timer = window.setTimeout(() => {
+      const newConcentrations = calculateReestablishedConcentrations(
+        selectedReaction,
+        concentrations,
+        shiftDirection
+      );
+
+      setConcentrations(newConcentrations);
       setSimulationStatus("reestablished");
-    }, 1500);
+    }, reestablishmentTime);
 
     return () => {
       window.clearTimeout(timer);
     };
   }, [simulationStatus, lastDisturbance]);
+
+  useEffect(() => {
+    if (simulationStatus !== "establishing") {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      const equilibriumConcentrations =
+        calculateInitialEquilibriumConcentrations(
+          selectedReaction,
+          concentrations
+        );
+
+      setConcentrations(equilibriumConcentrations);
+      setSimulationStatus("equilibrium");
+    }, 1500);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [simulationStatus, selectedReaction, concentrations]);
 
   return (
     <div className="app-container">
@@ -291,6 +335,7 @@ function App() {
 
       <div className={`disturbance-display ${simulationStatus}`}>
         <div className="disturbance-status-text">
+          {simulationStatus === "establishing" && "Establishing Equilibrium"}
           {simulationStatus === "equilibrium" && "System at Equilibrium"}
           {simulationStatus === "disrupted" && "Equilibrium Disrupted"}
           {simulationStatus === "reestablished" && "Equilibrium Reestablished"}
@@ -298,7 +343,9 @@ function App() {
         </div>
 
         <div className="disturbance-detail-text">
-          {lastDisturbance === null
+          {simulationStatus === "establishing"
+            ? "Products are forming as the system moves toward equilibrium."
+            : lastDisturbance === null
             ? "No disturbance has been applied."
             : `${lastDisturbance.label} ${
                 lastDisturbance.direction === "increase"

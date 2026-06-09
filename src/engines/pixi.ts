@@ -35,9 +35,9 @@ export const updateSimulation = (volume: number, piston: Graphics) => {
     const minVol = 0.5; 
     const maxVol = 2.0;
 
-    const topY = 50;
-    const bottomY = 460;
+    const highestPistonY = 50;
+    const lowestPistonY = 320;
 
     const volumePercentage = (volume - minVol) / (maxVol - minVol)
-    piston.y = bottomY - (volumePercentage * (bottomY - topY));
+    piston.y = lowestPistonY - volumePercentage * (lowestPistonY - highestPistonY);
 };
