@@ -32,7 +32,7 @@ export const initSimulation = async (container : HTMLDivElement) => {
 //function calculates piston position
 export const updateSimulation = (volume: number, piston: Graphics) => {
 
-    const minVol = 0.1; 
+    const minVol = 0.5; 
     const maxVol = 2.0;
 
     const topY = 50;

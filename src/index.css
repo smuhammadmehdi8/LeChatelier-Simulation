@@ -40,6 +40,7 @@ h1 {
   flex-wrap: wrap;
 }
 
+
 .slider-card {
   display: flex;
   flex-direction: column;
@@ -189,6 +190,7 @@ h1 {
   gap: 20px;
 }
 
+
 .vertical-card .slider-card {
   flex-direction: row; 
   justify-content: space-around;
@@ -272,7 +274,7 @@ h1 {
 
 .reaction-display-select {
   padding: 0.75rem 1.25rem;
-  border-radius: 999px;
+  border-radius: 10px;
   font-size: 2rem;
   font-weight: 700;
   background: #eef4ff;
@@ -282,7 +284,102 @@ h1 {
   text-align: center;
 }
 
+.concentration-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
 
+.concentration-group {
+  border: 2px solid black;
+  border-radius: 6px;
+  padding: 0.75rem;
+  min-width: 120px;
+  background: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.concentration-heading {
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.concentration-slider-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.equilibrium-arrow {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111;
+  padding: 0 0.25rem;
+}
+
+.disturbance-display {
+  margin-top: 0.75rem;
+  text-align: center;
+  font-weight: 700;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  border: 2px solid transparent;
+}
+
+.disturbance-status-text {
+  font-size: 1.5rem;
+  letter-spacing: 0.04em;
+}
+
+.disturbance-detail-text {
+  font-size: 1.05rem;
+  margin-top: 0.25rem;
+}
+
+.disturbance-display.disrupted {
+  color: #9a1f1f;
+  border-color: #d33;
+  background: #fff0f0;
+  animation: disturbance-blink 0.8s ease-in-out infinite alternate;
+}
+
+.disturbance-display.reestablished {
+  color: #145c2e;
+  border-color: #2f9e44;
+  background: #effaf2;
+}
+
+.disturbance-display.equilibrium {
+  color: #1f3b73;
+  border-color: #c9dcff;
+  background: #eef4ff;
+}
+
+.disturbance-display.noShift {
+  color: #5c4b14;
+  border-color: #d6b656;
+  background: #fff8db;
+}
+
+@keyframes disturbance-blink {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0.55;
+  }
+}
 
 
 

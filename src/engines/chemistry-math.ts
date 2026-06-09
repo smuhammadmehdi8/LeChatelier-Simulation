@@ -43,7 +43,41 @@ export const REACTIONS = {
   equi: {
     label: "Equimolar: H₂ + I₂ ⇌ 2HI",
     reactants: ["H₂", "I₂"],
-    products: ["2HI"]
+    products: ["HI"]
   }
 };
+
+export type ChangeDirection = "increase" | "decrease" | "none";
+
+export type DisturbanceType =
+  | "temperature"
+  | "volume"
+  | "pressure"
+  | "concentration"
+  | "inertGas"
+  | "catalyst";
+
+export type SpeciesSide = "reactant" | "product";
+
+export type Disturbance = {
+  type: DisturbanceType;
+  label: string;
+  direction: ChangeDirection;
+  species?: string;
+  speciesSide?: SpeciesSide;
+};
+
+export const getChangeDirection = (newValue: number, oldValue: number): ChangeDirection => {
+  
+  if (newValue > oldValue) {
+    return "increase";
+  }
+
+  if (newValue < oldValue) {
+    return "decrease";
+  }
+
+  return "none";
+};
+
 
