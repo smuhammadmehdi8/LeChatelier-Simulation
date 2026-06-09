@@ -381,5 +381,10 @@ h1 {
   }
 }
 
+.shift-result-text {
+  font-size: 0.95rem;
+  margin-top: 0.25rem;
+  font-weight: 700;
+}
 
 

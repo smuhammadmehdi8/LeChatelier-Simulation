@@ -4,9 +4,8 @@ import "./index.css";
 import Slider from "./components/slider";
 import Checkbox from "./components/checkbox";
 import Dropdown from "./components/dropdown";
-import {VOLUME_RANGE, PRESSURE_RANGE, calculatePressureFromVolume, calculateVolumeFromPressure, REACTIONS, getChangeDirection, type Disturbance, type SpeciesSide} from "./engines/chemistry-math";
+import {VOLUME_RANGE, PRESSURE_RANGE, calculatePressureFromVolume, calculateVolumeFromPressure, REACTIONS, getChangeDirection, type Disturbance, type SpeciesSide, type ShiftDirection,  getShiftDirection, getSpeciesResponseDirection, type ChangeDirection} from "./engines/chemistry-math";
 import { initSimulation, updateSimulation } from "./engines/pixi";
-
 
 
   const DEFAULT_VOLUME = 1.0;
@@ -42,6 +41,31 @@ type SimulationStatus =
   | "noShift";
 
 
+  const getShiftDisplayText = (shiftDirection: ShiftDirection): string => {
+    if (shiftDirection === "reactants") {
+      return "Shift: toward reactants";
+    }
+
+    if (shiftDirection === "products") {
+      return "Shift: toward products";
+    }
+
+    return "Shift: no equilibrium shift";
+  };
+
+  const getResponseArrow = (direction: ChangeDirection): string => {
+    if (direction === "increase") {
+      return "↑";
+    }
+
+    if (direction === "decrease") {
+      return "↓";
+    }
+
+    return "";
+  };
+
+
 function App() {
   const [volUnit, setVolUnit] = useState<string>(DEFAULT_VOLUME_UNIT);
   const [volume, setVolume] = useState<number>(DEFAULT_VOLUME);
@@ -63,6 +87,7 @@ function App() {
 
   const [lastDisturbance, setLastDisturbance] = useState<Disturbance | null>(null);
   const [simulationStatus, setSimulationStatus] = useState<SimulationStatus>("equilibrium");
+  const shiftDirection = getShiftDirection(selectedReaction, lastDisturbance);
 
 
   const markDisturbed = (disturbance: Disturbance) => {
@@ -245,7 +270,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <h1>LeChatelier's Principle</h1>
+      <h1> LeChatelier's Principle </h1>
 
       <div className="reaction-display">
         <select
@@ -262,6 +287,7 @@ function App() {
           ))}
         </select>
       </div>
+
 
       <div className={`disturbance-display ${simulationStatus}`}>
         <div className="disturbance-status-text">
@@ -282,6 +308,13 @@ function App() {
                   : "—"
               }`}
         </div>
+    
+
+        {lastDisturbance !== null && (
+          <div className="shift-result-text">
+            {getShiftDisplayText(shiftDirection)}
+          </div>
+        )}  
       </div>
 
 
@@ -362,7 +395,9 @@ function App() {
                 {selectedReaction.reactants.map((reactant) => (
                   <Slider
                     key={reactant}
-                    title={`[${reactant}]`}
+                    title={`[${reactant}] ${getResponseArrow(
+                      getSpeciesResponseDirection(shiftDirection, "reactant")
+                    )}`}
                     min={0.0}
                     max={3}
                     step={0.1}
@@ -385,7 +420,9 @@ function App() {
                 {selectedReaction.products.map((product) => (
                   <Slider
                     key={product}
-                    title={`[${product}]`}
+                    title={`[${product}] ${getResponseArrow(
+                      getSpeciesResponseDirection(shiftDirection, "product")
+                    )}`}  
                     min={0.0}
                     max={3}
                     step={0.1}
