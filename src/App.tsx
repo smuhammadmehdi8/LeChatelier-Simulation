@@ -16,31 +16,29 @@ import { initSimulation, updateSimulation } from "./engines/pixi";
   const DEFAULT_CATALYST_ACTIVE = false;
 
   type ReactionKey = keyof typeof REACTIONS;
-  type Reaction = (typeof REACTIONS)[ReactionKey]
+  type Reaction = (typeof REACTIONS)[ReactionKey];
   type Concentrations = Record<string, number>;
 
   const buildDefaultConcentrations = (reaction: Reaction): Concentrations => {
-  const defaultConcentrations: Concentrations = {};
+    const defaultConcentrations: Concentrations = {};
 
-  reaction.reactants.forEach((reactant) => {
-    defaultConcentrations[reactant] = 1.0;
-  });
+    reaction.reactants.forEach((reactant) => {
+      defaultConcentrations[reactant] = 1.0;
+    });
 
-  reaction.products.forEach((product) => {
-    defaultConcentrations[product] = 0.0;
-  });
+    reaction.products.forEach((product) => {
+      defaultConcentrations[product] = 0.0;
+    });
 
-  return defaultConcentrations;
-};
+    return defaultConcentrations;
+  };
 
-
-type SimulationStatus =
-  | "establishing"
-  | "equilibrium"
-  | "disrupted"
-  | "reestablished"
-  | "noShift";
-
+  type SimulationStatus =
+    | "establishing"
+    | "equilibrium"
+    | "disrupted"
+    | "reestablished"
+    | "noShift";
 
   const getShiftDisplayText = (shiftDirection: ShiftDirection): string => {
     if (shiftDirection === "reactants") {
@@ -66,6 +64,29 @@ type SimulationStatus =
     return "";
   };
 
+  const CONCENTRATION_ANIMATION_FRAME_MS = 50;
+
+const roundAnimatedConcentration = (value: number): number => {
+  return Math.round(value * 10) / 10;
+};
+
+const interpolateConcentrations = (startConcentrations: Concentrations, targetConcentrations: Concentrations, progress: number): Concentrations => {
+  const nextConcentrations: Concentrations = {};
+
+  Object.keys(targetConcentrations).forEach((species) => {
+    const startValue = startConcentrations[species] ?? 0;
+    const targetValue = targetConcentrations[species] ?? 0;
+
+    const animatedValue =
+      startValue + (targetValue - startValue) * progress;
+
+    nextConcentrations[species] =
+      roundAnimatedConcentration(animatedValue);
+  });
+
+  return nextConcentrations;
+};
+
 
 function App() {
   const [volUnit, setVolUnit] = useState<string>(DEFAULT_VOLUME_UNIT);
@@ -89,6 +110,9 @@ function App() {
   const [lastDisturbance, setLastDisturbance] = useState<Disturbance | null>(null);
   const [simulationStatus, setSimulationStatus] = useState<SimulationStatus>("establishing");
   const shiftDirection = getShiftDirection(selectedReaction, lastDisturbance);
+  const controlIsLocked = simulationStatus === "establishing" || simulationStatus === "disrupted";
+
+  const concentrationsRef = useRef<Concentrations>(concentrations);
 
 
   
@@ -115,51 +139,70 @@ function App() {
     setSimulationStatus("disrupted");
   };
 
-  const handleVolumeChange = (newVolume : number) => {
-    const volumeInL = volUnit === DEFAULT_VOLUME_UNIT ? newVolume : newVolume / 1000;
-
-    const direction = getChangeDirection(volumeInL, volume);
-
-    markDisturbed({
-      type: "volume",
-      label: "Volume",
-      direction,
-    });
+  //HANDLES VOLUME STUFF, TWO FUNCTIONS BECASUE THEN IT ALSO TAKES THE DISRUPTION INPUTS AS THE USER DRAGS THE SLIDER
+  const previewVolumeChange = (newVolume: number) => {
+    const volumeInL =
+      volUnit === DEFAULT_VOLUME_UNIT ? newVolume : newVolume / 1000;
 
     setVolume(volumeInL);
 
     const newPressure = calculatePressureFromVolume(volumeInL);
     setPressure(newPressure);
   };
+  const commitVolumeChange = (newVolume: number, startVolume: number) => {
+    const finalVolumeInL =
+      volUnit === DEFAULT_VOLUME_UNIT ? newVolume : newVolume / 1000;
 
-  const handlePressureChange = (newPressure : number) => {
-    const direction = getChangeDirection(newPressure, pressure);
+    const startVolumeInL =
+      volUnit === DEFAULT_VOLUME_UNIT ? startVolume : startVolume / 1000;
 
-    markDisturbed({ 
-      type: "pressure",
-      label: "Pressure",
+    const direction = getChangeDirection(finalVolumeInL, startVolumeInL);
+
+    markDisturbed({
+      type: "volume",
+      label: "Volume",
       direction,
     });
-   
-   
+  };
+
+  //HANDLES PRESSURE STUFF
+  const previewPressureChange = (newPressure: number) => {
     setPressure(newPressure);
 
     const newVolume = calculateVolumeFromPressure(newPressure);
     setVolume(newVolume);
   };
+  const commitPressureChange = (newPressure: number, startPressure: number) => {
+    const direction = getChangeDirection(newPressure, startPressure);
 
-  const handleTemperatureChange = (newValue: number) => {
-    const tempInK = tempUnit === DEFAULT_TEMP_UNIT ? newValue : newValue + 273.15;
+    markDisturbed({
+      type: "pressure",
+      label: "Pressure",
+      direction,
+    });
+  };
 
-    const direction = getChangeDirection(tempInK, temp);
+  //HANDLES TEMP STUFF
+  const previewTemperatureChange = (newValue: number) => {
+    const tempInK =
+      tempUnit === DEFAULT_TEMP_UNIT ? newValue : newValue + 273.15;
+
+    setTemp(tempInK);
+  };
+  const commitTemperatureChange = (newValue: number, startValue: number) => {
+    const finalTempInK =
+      tempUnit === DEFAULT_TEMP_UNIT ? newValue : newValue + 273.15;
+
+    const startTempInK =
+      tempUnit === DEFAULT_TEMP_UNIT ? startValue : startValue + 273.15;
+
+    const direction = getChangeDirection(finalTempInK, startTempInK);
 
     markDisturbed({
       type: "temperature",
       label: "Temperature",
       direction,
     });
-
-    setTemp(tempInK);
   };
 
   const handleReactionChange = (newReactionKey: ReactionKey) => {
@@ -196,10 +239,20 @@ function App() {
     });
   };
 
-  const handleConcentrationChange = (species: string, speciesSide: SpeciesSide, newValue: number) => {
-
-    const oldValue = concentrations[species] ?? 0.0;
-    const direction = getChangeDirection(newValue, oldValue);
+  //HANDLES CONCENTRATION STUFF
+  const previewConcentrationChange = (species: string, newValue: number) => {
+    setConcentrations((currentConcentrations) => ({
+      ...currentConcentrations,
+      [species]: newValue,
+    }));
+  };
+  const commitConcentrationChange = (
+    species: string,
+    speciesSide: SpeciesSide,
+    newValue: number,
+    startValue: number
+  ) => {
+    const direction = getChangeDirection(newValue, startValue);
 
     markDisturbed({
       type: "concentration",
@@ -208,11 +261,6 @@ function App() {
       species,
       speciesSide,
     });
-
-    setConcentrations((currentConcentrations) => ({
-      ...currentConcentrations,
-      [species]: newValue,
-    }));
   };
 
   const handleCatalystChange = (isChecked: boolean) => {
@@ -262,6 +310,10 @@ function App() {
     }
   }, [volume]);
 
+  useEffect(() => {
+    concentrationsRef.current = concentrations;
+  }, [concentrations]);
+
 
   useEffect(() => {
     if (simulationStatus !== "disrupted") {
@@ -273,44 +325,85 @@ function App() {
       return;
     }
 
-    const reestablishmentTime = catalystActive ? 600 : 1500;
+    const startConcentrations = concentrationsRef.current;
 
-    const timer = window.setTimeout(() => {
-      const newConcentrations = calculateReestablishedConcentrations(
+    const targetConcentrations =
+      calculateReestablishedConcentrations(
         selectedReaction,
-        concentrations,
+        startConcentrations,
         shiftDirection
       );
 
-      setConcentrations(newConcentrations);
-      setSimulationStatus("reestablished");
-    }, reestablishmentTime);
+    const animationDuration = catalystActive ? 600 : 1500;
+    const animationStartTime = Date.now();
+
+    const animationTimer = window.setInterval(() => {
+      const elapsedTime = Date.now() - animationStartTime;
+      const progress = Math.min(elapsedTime / animationDuration, 1);
+
+      setConcentrations(
+        interpolateConcentrations(
+          startConcentrations,
+          targetConcentrations,
+          progress
+        )
+      );
+
+      if (progress >= 1) {
+        window.clearInterval(animationTimer);
+        setSimulationStatus("reestablished");
+      }
+    }, CONCENTRATION_ANIMATION_FRAME_MS);
 
     return () => {
-      window.clearTimeout(timer);
+      window.clearInterval(animationTimer);
     };
-  }, [simulationStatus, lastDisturbance]);
+  }, [
+    simulationStatus,
+    shiftDirection,
+    selectedReaction,
+    catalystActive,
+    lastDisturbance,
+  ]);
 
   useEffect(() => {
     if (simulationStatus !== "establishing") {
       return;
     }
 
-    const timer = window.setTimeout(() => {
-      const equilibriumConcentrations =
-        calculateInitialEquilibriumConcentrations(
-          selectedReaction,
-          concentrations
-        );
+    const startConcentrations = concentrationsRef.current;
 
-      setConcentrations(equilibriumConcentrations);
-      setSimulationStatus("equilibrium");
-    }, 1500);
+    const targetConcentrations =
+      calculateInitialEquilibriumConcentrations(
+        selectedReaction,
+        startConcentrations
+      );
+
+    const animationDuration = 1500;
+    const animationStartTime = Date.now();
+
+    const animationTimer = window.setInterval(() => {
+      const elapsedTime = Date.now() - animationStartTime;
+      const progress = Math.min(elapsedTime / animationDuration, 1);
+
+      setConcentrations(
+        interpolateConcentrations(
+          startConcentrations,
+          targetConcentrations,
+          progress
+        )
+      );
+
+      if (progress >= 1) {
+        window.clearInterval(animationTimer);
+        setSimulationStatus("equilibrium");
+      }
+    }, CONCENTRATION_ANIMATION_FRAME_MS);
 
     return () => {
-      window.clearTimeout(timer);
+      window.clearInterval(animationTimer);
     };
-  }, [simulationStatus, selectedReaction, concentrations]);
+  }, [simulationStatus, selectedReaction]);
 
   return (
     <div className="app-container">
@@ -374,6 +467,7 @@ function App() {
                       label={"Catalyst"}
                       checked={catalystActive}
                       onChange={handleCatalystChange}
+                      disabled={controlIsLocked}
             />
             <Dropdown
               label={"Inert Gas"}
@@ -384,6 +478,7 @@ function App() {
                 { value: "Ar", label: "Argon" },
               ]}
               onChange={handleInertGasChange}
+              disabled={controlIsLocked}
             />
           </div>
           <hr id="line" />
@@ -399,7 +494,9 @@ function App() {
               onUnitChange={(newUnit) => {
                 setTempUnit(newUnit);
               }}
-              onValueChange={handleTemperatureChange}
+              onValueChange={previewTemperatureChange}
+              onValueCommit={commitTemperatureChange}
+              disabled={controlIsLocked}
             />
           </div>
           <hr id="line" />
@@ -419,7 +516,9 @@ function App() {
               onUnitChange={(newUnit) => {
                 setVolUnit(newUnit);
               }}
-              onValueChange={handleVolumeChange}
+              onValueChange={previewVolumeChange}
+              onValueCommit={commitVolumeChange}
+              disabled={controlIsLocked}
             />
             <Slider
               title={"Pressure (atm)"}
@@ -427,7 +526,9 @@ function App() {
               max={PRESSURE_RANGE.max}
               step={0.1}
               value={pressure}
-              onValueChange={handlePressureChange}
+              onValueChange={previewPressureChange}
+              onValueCommit={commitPressureChange}
+              disabled={controlIsLocked}
             />
           </div>
         </div>
@@ -451,8 +552,12 @@ function App() {
                     value={concentrations[reactant] ?? 1.0}
                     orientation="vertical"
                     onValueChange={(newValue) => {
-                      handleConcentrationChange(reactant, "reactant", newValue);
+                      previewConcentrationChange(reactant, newValue);
                     }}
+                    onValueCommit={(newValue, startValue) => {
+                      commitConcentrationChange(reactant, "reactant", newValue, startValue);
+                    }}
+                    disabled={controlIsLocked}
                   />
                 ))}
               </div>
@@ -476,8 +581,12 @@ function App() {
                     value={concentrations[product] ?? 0.0}
                     orientation="vertical"
                     onValueChange={(newValue) => {
-                      handleConcentrationChange(product, "product", newValue);
+                      previewConcentrationChange(product, newValue);
                     }}
+                    onValueCommit={(newValue, startValue) => {
+                      commitConcentrationChange(product, "product", newValue, startValue);
+                    }}
+                    disabled={controlIsLocked}
                   />
                 ))}
               </div>

@@ -4,9 +4,10 @@ interface CheckboxProps {
     label: string;
     checked: boolean;
     onChange: (checked: boolean) => void;
+    disabled?: boolean;
 }
 
-export default function Checkbox({name, label, checked, onChange} : CheckboxProps) {
+export default function Checkbox({name, label, checked, onChange, disabled = false} : CheckboxProps) {
     return (
         <div className="checkbox-container"> 
             <input type="checkbox" 
@@ -16,6 +17,7 @@ export default function Checkbox({name, label, checked, onChange} : CheckboxProp
                    onChange={(event) => {
                     onChange(event.target.checked);
                    }}
+                   disabled={disabled}
             />
             <label htmlFor={name}>{label}</label>
         </div>

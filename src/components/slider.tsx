@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useRef} from "react";
 
 interface SliderProps {
     title: string;
@@ -11,19 +11,38 @@ interface SliderProps {
     currentUnit?: string;
     onUnitChange?: (newUnit: string) => void;
     onValueChange?: (newValue: number) => void;
+    disabled?: boolean;
+    onValueCommit?: (newValue: number, startValue: number) => void;
 }
 
-export default function Slider({ title, min, max, step, value, orientation="horizontal", unitOptions, currentUnit, onUnitChange, onValueChange} : SliderProps) {
+export default function Slider({ title, min, max, step, value, orientation="horizontal", unitOptions, currentUnit, onUnitChange, onValueChange, disabled = false, onValueCommit} : SliderProps) {
     const [sliderValue, setSliderValue] = useState<number>(value);
     const [textValue, setTextValue] = useState<string>(String(value));
 
     const [prevValueProp, setPrevValueProp] = useState<number>(value);
+
+    const dragStartValueRef = useRef<number>(value);
+    const isDraggingRef = useRef<boolean>(false);
 
     if (value !== prevValueProp) {
         setPrevValueProp(value);
         setSliderValue(value);
         setTextValue(String(value));
     }
+
+    const beginSliderDrag = () => {
+        isDraggingRef.current = true;
+        dragStartValueRef.current = sliderValue;
+    };
+
+    const commitSliderDrag = () => {
+        if (!isDraggingRef.current) {
+            return;
+        }
+
+        isDraggingRef.current = false;
+        onValueCommit?.(sliderValue, dragStartValueRef.current);
+    };
 
 
     const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,9 +63,12 @@ export default function Slider({ title, min, max, step, value, orientation="hori
         if (val < min) { val = min; }
         if (val > max) { val = max; }
 
+        const previousValue = sliderValue;
+
         setSliderValue(val);
         setTextValue(String(val));
         onValueChange?.(val);
+        onValueCommit?.(val, previousValue);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -64,10 +86,13 @@ export default function Slider({ title, min, max, step, value, orientation="hori
                 <span className="slider-title"> {title}</span>
 
                 {unitOptions && onUnitChange && (
-                    <select className="unit-selecter" value={currentUnit} onChange={(e) => onUnitChange(e.target.value)}> 
-                        {unitOptions.map(unit => (
-                        <option key={unit} value={unit}>{unit}</option>
-                        ))}
+                    <select className="unit-selecter" 
+                            value={currentUnit} 
+                            onChange={(e) => onUnitChange(e.target.value)}> 
+                                {unitOptions.map(unit => (
+                                    <option key={unit} value={unit}>{unit}</option>
+                            ))}
+                            disabled={disabled}
                     </select>
                 )}
 
@@ -81,6 +106,10 @@ export default function Slider({ title, min, max, step, value, orientation="hori
                         step={step} 
                         value={sliderValue}
                         onChange={handleSliderChange} 
+                        disabled={disabled}
+                        onPointerDown={beginSliderDrag}
+                        onPointerUp={commitSliderDrag}
+                        onPointerCancel={commitSliderDrag}
                 />
 
                 <input className="value-box"
@@ -92,6 +121,7 @@ export default function Slider({ title, min, max, step, value, orientation="hori
                        onChange={handleBoxChange}
                        onBlur={commitValue}
                        onKeyDown={handleKeyDown}
+                       disabled={disabled}
                     
                 />
             </div>
