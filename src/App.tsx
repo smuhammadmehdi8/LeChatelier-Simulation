@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { Application, Graphics } from "pixi.js";
+import { Application, Graphics, Container } from "pixi.js";
 import "./index.css";
 import Slider from "./components/slider";
 import Checkbox from "./components/checkbox";
 import Dropdown from "./components/dropdown";
 import {VOLUME_RANGE, PRESSURE_RANGE, calculatePressureFromVolume, calculateVolumeFromPressure, REACTIONS, getChangeDirection, type Disturbance, type SpeciesSide, type ShiftDirection,  getShiftDirection, getSpeciesResponseDirection, type ChangeDirection, calculateReestablishedConcentrations, calculateInitialEquilibriumConcentrations} from "./engines/chemistry-math";
-import { initSimulation, updateSimulation } from "./engines/pixi";
+import { initSimulation, updateSimulation, updateParticleVisuals, getSpeciesCssColor, updateParticleMotion } from "./engines/pixi";
 
 
   const DEFAULT_VOLUME = 1.0;
@@ -111,6 +111,10 @@ function App() {
   const [simulationStatus, setSimulationStatus] = useState<SimulationStatus>("establishing");
   const shiftDirection = getShiftDirection(selectedReaction, lastDisturbance);
   const controlIsLocked = simulationStatus === "establishing" || simulationStatus === "disrupted";
+
+  const visibleSpecies = Array.from(
+    new Set([...selectedReaction.reactants, ...selectedReaction.products])
+  );
 
   const concentrationsRef = useRef<Concentrations>(concentrations);
 
@@ -277,20 +281,23 @@ function App() {
 
   const appRef = useRef<Application | null>(null);
   const pistonRef = useRef<Graphics | null>(null);
+  const particleLayerRef = useRef<Container | null>(null);
 
   useEffect(() => {
     let isMounted: boolean = true;
     
     if (pixiContainerRef.current) {
-      initSimulation(pixiContainerRef.current).then(({app, pistonLid}) => {
+      initSimulation(pixiContainerRef.current).then(({ app, pistonLid, particleLayer }) => {
         if (!isMounted) {
           app.destroy(true, { children: true, texture: true });
           return;
         }
         appRef.current = app;
         pistonRef.current = pistonLid;
+        particleLayerRef.current = particleLayer;
 
         updateSimulation(volume, pistonLid);
+        updateParticleVisuals(particleLayer, concentrations, volume);
       });
     }
 
@@ -309,6 +316,34 @@ function App() {
       updateSimulation(volume, pistonRef.current);
     }
   }, [volume]);
+
+  useEffect(() => {
+    if (particleLayerRef.current) {
+      updateParticleVisuals(particleLayerRef.current, concentrations, volume);
+    }
+  }, [concentrations, volume, selectedReactionKey]);
+
+  useEffect(() => {
+  let animationFrameId: number;
+
+  const animateParticles = () => {
+    if (particleLayerRef.current) {
+      updateParticleMotion(
+        particleLayerRef.current,
+        volume,
+        temp
+      );
+    }
+
+    animationFrameId = window.requestAnimationFrame(animateParticles);
+  };
+
+  animationFrameId = window.requestAnimationFrame(animateParticles);
+
+  return () => {
+    window.cancelAnimationFrame(animationFrameId);
+  };
+}, [volume, temp, selectedReactionKey]);
 
   useEffect(() => {
     concentrationsRef.current = concentrations;
@@ -590,6 +625,21 @@ function App() {
               </div>
             </div>
           </div>
+                
+          <div className="particle-key">
+            <div className="particle-key-title">Particle Key</div>
+
+            {visibleSpecies.map((species) => (
+              <div className="particle-key-row" key={species}>
+                <span
+                  className="particle-key-dot"
+                  style={{ backgroundColor: getSpeciesCssColor(species) }}
+                />
+                <span className="particle-key-label">{species}</span>
+              </div>
+            ))}
+          </div>
+
         </div>
         <div className="graphs">{/* placeholder div for popout graphs */}</div>
       </div>
