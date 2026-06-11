@@ -535,7 +535,7 @@ function App() {
 
         <div className="canvas" ref={pixiContainerRef}></div>
         <div className="controlPanel-right">
-          <div className="concentration-panel">
+          <div   className={`concentration-panel ${controlIsLocked ? "concentration-panel-responding" : ""}`}>
             <div className="concentration-group">
               <div className="concentration-heading">Reactants</div>
 
@@ -557,7 +557,6 @@ function App() {
                     onValueCommit={(newValue, startValue) => {
                       commitConcentrationChange(reactant, "reactant", newValue, startValue);
                     }}
-                    disabled={controlIsLocked}
                   />
                 ))}
               </div>
@@ -586,7 +585,6 @@ function App() {
                     onValueCommit={(newValue, startValue) => {
                       commitConcentrationChange(product, "product", newValue, startValue);
                     }}
-                    disabled={controlIsLocked}
                   />
                 ))}
               </div>
