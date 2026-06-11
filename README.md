@@ -1,5 +1,8 @@
 # LeChatelier-Simulation
 
+## Offical Link
+  **You can view the simulation on lechateliersim.com.**
+
   
 ## Requirements
 
@@ -26,11 +29,10 @@
 
 ## Software Requirements Specification (SRS):
 
-  - Equilibarium is defined as when the rates of the forward and reverse reactions are equal
+  - Equilibarium is defined as when no more reactants and products are being formed.
 
-  - User selects one of the pre-defined reactions, and the system establishes equilibrium over a time frame
-  - The reaction rates are shown as speed (as particles jump back and forth) as they slowly settle into equilibrium
-  - Molecules bounce around until equilibrium is established (i.e 50 molecules on one side and 30 molecues on the other until both no longer change by more than 2-3 units (implying equilibrium))
+  - User selects one of the pre-defined reactions, and the system establishes equilibrium over a time frame, 1500 seconds for a regular timeframe, and 600 seconds for when        the cataylst checkbox has been checked.
+  - Product and reactant concentrations and particle numbers change as equilibarium is reestablished.
   - The user can select some options to “disrupt” equilibrium:	
     - Change in:
       - Temp
@@ -41,11 +43,9 @@
         - Inert gases (when volume is constant)
         - Catalysts 
   - IDEAL GAS LAW: PV = nRT
-  - An arrow that shows which way adding a "disrupter" will cause the system to shift in order to reestablish equilibrium
-  - Graph which shows the concentrations as they slowly increase/decrease into equilibrium
-  - Cataylst which speeds up the reaction and lowers the activation energy
-  - Different molecule sizes to display effect of mass on molecule speed, thus affecting equilibrium; for example, how the temperature affects the velocities of those particles, thus affecting the overall reaction (collision theory) --> effects if activaiton energy has been reached
-    - At a constant temperature, heavier molecules move slower than lighter ones.
+  - Text that indicates which way adding a "disrupter" will cause the system to shift in order to reestablish equilibrium.
+  - Graph which shows the concentrations as they slowly increase/decrease into equilibrium (not added yet)
+  - Temperature affects particle speeds.
 
   - Important aspects considered when building application:
     - The sliders for volume and pressure MUST be interlocked due to the nature of gas law
