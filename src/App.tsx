@@ -112,9 +112,22 @@ function App() {
   const shiftDirection = getShiftDirection(selectedReaction, lastDisturbance);
   const controlIsLocked = simulationStatus === "establishing" || simulationStatus === "disrupted";
 
+  const inertGasIsActive = inertGas !== DEFAULT_INERT_GAS;
+  const volumePressureLocked = controlIsLocked || inertGasIsActive;
+  
+
   const visibleSpecies = Array.from(
-    new Set([...selectedReaction.reactants, ...selectedReaction.products])
+    new Set([
+      ...selectedReaction.reactants,
+      ...selectedReaction.products,
+      ...(inertGas === DEFAULT_INERT_GAS ? [] : [inertGas]),
+    ])
   );
+
+  const visualParticleAmounts: Concentrations = {
+    ...concentrations,
+    ...(inertGas === DEFAULT_INERT_GAS ? {} : { [inertGas]: 1.0 }),
+  };
 
   const concentrationsRef = useRef<Concentrations>(concentrations);
 
@@ -230,6 +243,23 @@ function App() {
     setConcentrations(buildDefaultConcentrations(newReaction));
   };
 
+  const resetSimulation = () => {
+    setVolUnit(DEFAULT_VOLUME_UNIT);
+    setVolume(DEFAULT_VOLUME);
+
+    setTempUnit(DEFAULT_TEMP_UNIT);
+    setTemp(DEFAULT_TEMP);
+
+    setPressure(calculatePressureFromVolume(DEFAULT_VOLUME));
+
+    setInertGas(DEFAULT_INERT_GAS);
+    setCatalystActive(DEFAULT_CATALYST_ACTIVE);
+    setLastDisturbance(null);
+    setSimulationStatus("establishing");
+
+    setConcentrations(buildDefaultConcentrations(selectedReaction));
+  };
+
   const handleInertGasChange = (newInertGas: string) => {
     setInertGas(newInertGas);
 
@@ -297,7 +327,7 @@ function App() {
         particleLayerRef.current = particleLayer;
 
         updateSimulation(volume, pistonLid);
-        updateParticleVisuals(particleLayer, concentrations, volume);
+        updateParticleVisuals(particleLayer, visualParticleAmounts, volume);
       });
     }
 
@@ -319,31 +349,35 @@ function App() {
 
   useEffect(() => {
     if (particleLayerRef.current) {
-      updateParticleVisuals(particleLayerRef.current, concentrations, volume);
-    }
-  }, [concentrations, volume, selectedReactionKey]);
-
-  useEffect(() => {
-  let animationFrameId: number;
-
-  const animateParticles = () => {
-    if (particleLayerRef.current) {
-      updateParticleMotion(
+      updateParticleVisuals(
         particleLayerRef.current,
-        volume,
-        temp
+        visualParticleAmounts,
+        volume
       );
     }
+  }, [visualParticleAmounts, volume, selectedReactionKey, inertGas]);
+
+  useEffect(() => {
+    let animationFrameId: number;
+
+    const animateParticles = () => {
+      if (particleLayerRef.current) {
+        updateParticleMotion(
+          particleLayerRef.current,
+          volume,
+          temp
+        );
+      }
+
+      animationFrameId = window.requestAnimationFrame(animateParticles);
+    };
 
     animationFrameId = window.requestAnimationFrame(animateParticles);
-  };
 
-  animationFrameId = window.requestAnimationFrame(animateParticles);
-
-  return () => {
-    window.cancelAnimationFrame(animationFrameId);
-  };
-}, [volume, temp, selectedReactionKey]);
+    return () => {
+      window.cancelAnimationFrame(animationFrameId);
+    };
+  }, [volume, temp, selectedReactionKey]);
 
   useEffect(() => {
     concentrationsRef.current = concentrations;
@@ -473,6 +507,8 @@ function App() {
         <div className="disturbance-detail-text">
           {simulationStatus === "establishing"
             ? "Products are forming as the system moves toward equilibrium."
+            : inertGasIsActive
+            ? `Inert gas added at constant volume. Volume and pressure controls are locked until reset.`
             : lastDisturbance === null
             ? "No disturbance has been applied."
             : `${lastDisturbance.label} ${
@@ -513,7 +549,7 @@ function App() {
                 { value: "Ar", label: "Argon" },
               ]}
               onChange={handleInertGasChange}
-              disabled={controlIsLocked}
+              disabled={controlIsLocked || inertGasIsActive}
             />
           </div>
           <hr id="line" />
@@ -553,7 +589,7 @@ function App() {
               }}
               onValueChange={previewVolumeChange}
               onValueCommit={commitVolumeChange}
-              disabled={controlIsLocked}
+              disabled={volumePressureLocked}
             />
             <Slider
               title={"Pressure (atm)"}
@@ -563,7 +599,7 @@ function App() {
               value={pressure}
               onValueChange={previewPressureChange}
               onValueCommit={commitPressureChange}
-              disabled={controlIsLocked}
+              disabled={volumePressureLocked}
             />
           </div>
         </div>
@@ -639,6 +675,14 @@ function App() {
               </div>
             ))}
           </div>
+
+          <button
+            className="reset-button"
+            type="button"
+            onClick={resetSimulation}
+          >
+            ↻ Reset Simulation
+          </button>
 
         </div>
         <div className="graphs">{/* placeholder div for popout graphs */}</div>

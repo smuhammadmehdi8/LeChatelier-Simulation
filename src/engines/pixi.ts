@@ -1,7 +1,7 @@
 import { Application, Graphics, Container } from "pixi.js";
 
 
-const CHAMBER_LEFT_X = 20; //35 for debugging, ALSO DONT FORGET TO CHANGE THE pistonY + 20 to +3 5
+const CHAMBER_LEFT_X = 20; //35 for debugging, ALSO DONT FORGET TO CHANGE THE pistonY + 20 to + 35
 const CHAMBER_RIGHT_X = 380; //365
 const CHAMBER_BOTTOM_Y = 480; //460
 
@@ -51,6 +51,9 @@ export const initSimulation = async (container : HTMLDivElement) => {
         antialias: true,
     });
 
+    const particleLayer = new Container();
+    app.stage.addChild(particleLayer);
+
     const containerWalls = new Graphics();
     containerWalls.rect(0, 50, 20, 450).fill({color: 0xBDC3C7}); //;eft wall
     containerWalls.rect(380, 50, 20, 450).fill({color: 0xBDC3C7}); //right wall 
@@ -66,11 +69,7 @@ export const initSimulation = async (container : HTMLDivElement) => {
     app.stage.addChild(pistonLid);
 
     container.appendChild(app.canvas);
-
-    const particleLayer = new Container();
-    app.stage.addChild(particleLayer);
     
-
     return { app, pistonLid, particleLayer };
 };
 
@@ -88,6 +87,8 @@ export const getSpeciesCssColor = (species: string): string => {
     "NO₂": "#dc2626",
     "I₂": "#374151",
     "HI": "#0891b2",
+    "He": "#94a3b8",
+    "Ar": "#64748b",
   };
 
   return speciesColors[species] ?? "#111827";
@@ -269,7 +270,7 @@ const resolveParticleCollisions = (particles: MovingParticle[]) => {
         continue;
       }
 
-      const bounceStrength = 0.85;
+      const bounceStrength = 1.0;
 
       const impulse = -velocityAlongNormal * bounceStrength;
 
@@ -282,17 +283,65 @@ const resolveParticleCollisions = (particles: MovingParticle[]) => {
   }
 };
 
+const MIN_TEMPERATURE_K = 273.15;
+const MAX_TEMPERATURE_K = 600;
+
+const MIN_PARTICLE_SPEED = 0.7;
+const MAX_PARTICLE_SPEED = 2.5;
+
+const calculateTargetParticleSpeed = (temperatureK: number): number => {
+  const clampedTemperature = Math.max(
+    MIN_TEMPERATURE_K,
+    Math.min(MAX_TEMPERATURE_K, temperatureK)
+  );
+
+  const temperaturePosition =
+    (clampedTemperature - MIN_TEMPERATURE_K) /
+    (MAX_TEMPERATURE_K - MIN_TEMPERATURE_K);
+
+  return (
+    MIN_PARTICLE_SPEED +
+    temperaturePosition * (MAX_PARTICLE_SPEED - MIN_PARTICLE_SPEED)
+  );
+};
+
+const normalizeParticleSpeed = (particle: MovingParticle, targetSpeed: number) => {
+  const currentSpeed = Math.sqrt(
+    particle.vx * particle.vx + particle.vy * particle.vy
+  );
+
+  if (currentSpeed < 0.01) {
+    const angle = Math.random() * Math.PI * 2;
+
+    particle.vx = Math.cos(angle) * targetSpeed;
+    particle.vy = Math.sin(angle) * targetSpeed;
+
+    return;
+  }
+
+  const scaleFactor = targetSpeed / currentSpeed;
+
+  particle.vx *= scaleFactor;
+  particle.vy *= scaleFactor;
+};
+
+const normalizeAllParticleSpeeds = (particles: MovingParticle[],targetSpeed: number) => {
+  particles.forEach((particle) => {
+    normalizeParticleSpeed(particle, targetSpeed);
+  });
+};
+
 export const updateParticleMotion = (particleLayer: Container, volume: number, temperatureK: number) => {
   const bounds = getParticleBounds(volume);
-
-  const temperatureSpeedMultiplier =
-    0.6 + ((temperatureK - 273.15) / (600 - 273.15)) * 1.4;
-
   const particles = particleLayer.children as MovingParticle[];
 
+  const targetSpeed = calculateTargetParticleSpeed(temperatureK);
+
+  normalizeAllParticleSpeeds(particles, targetSpeed);
+
   particles.forEach((particle) => {
-    particle.x += particle.vx * temperatureSpeedMultiplier;
-    particle.y += particle.vy * temperatureSpeedMultiplier;
+    particle.x += particle.vx;
+    particle.y += particle.vy;
 
     if (particle.x - particle.radius <= bounds.left) {
       particle.x = bounds.left + particle.radius;
@@ -316,4 +365,7 @@ export const updateParticleMotion = (particleLayer: Container, volume: number, t
   });
 
   resolveParticleCollisions(particles);
+
+  normalizeAllParticleSpeeds(particles, targetSpeed);
 };
+
